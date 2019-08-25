@@ -55,7 +55,17 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
+# .env
 
 # next.js build output
 .next
+
+# VsCode configuration
+.vscode/
+.prettierrc
+
+# Typescript files
+dist/
+
+# OSX files
+._*

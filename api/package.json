@@ -1,0 +1,47 @@
+{
+  "name": "bank_api",
+  "version": "1.0.0",
+  "description": "API for a bank",
+  "main": "./dist/bin/www.js",
+  "scripts": {
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node .",
+    "dev": "nodemon",
+    "test": "mocha -r ts-node/register tests/**/*.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Quevlahr/benext_bank.git"
+  },
+  "author": "Quentin Roulon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Quevlahr/benext_bank/issues"
+  },
+  "homepage": "https://github.com/Quevlahr/benext_bank#readme",
+  "dependencies": {
+    "@hapi/joi": "^15.1.1",
+    "@types/hapi__joi": "^15.0.3",
+    "@types/joi": "^14.3.3",
+    "express": "^4.17.0",
+    "pg": "^7.12.1",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^5.16.0"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.27",
+    "@types/chai": "^4.1.7",
+    "@types/express": "^4.17.0",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.6.8",
+    "@types/pg": "^7.4.14",
+    "@types/validator": "^10.11.3",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^6.2.0",
+    "nodemon": "^1.19.1",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
+  }
+}

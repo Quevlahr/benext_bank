@@ -26,12 +26,14 @@ services:
       - adminer_volume
       
   api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
+    image: node:10.16.0-alpine
+    working_dir: /usr/src/app
+    restart: always
     container_name: "bank_api"
     volumes:
       - api_volume:/usr/src/app
+      # - ${PWD}/api/package.json:/usr/src/app/package.json
+      # - ${PWD}/api/package-lock.json:/usr/src/app/package-lock.json
       - ${PWD}/api/node_modules:/usr/src/app/node_modules
     ports:
       - ${API_PORT}:${INTERN_API_PORT}
