@@ -1,5 +1,7 @@
 import { sequelize } from '../database/sequelize';
-import { Sequelize, Model, DataTypes, BuildOptions } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
+import { Account } from './account';
+import { Operation } from './operation';
 
 class User extends Model {
   public username!: string;
@@ -31,5 +33,11 @@ User.init(
     modelName: 'app_user',
   }
 );
+
+User.hasMany(Account);
+Account.belongsTo(User);
+
+User.hasMany(Operation);
+Operation.belongsTo(User);
 
 export { User };

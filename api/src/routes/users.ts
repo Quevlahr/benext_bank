@@ -1,19 +1,34 @@
 import express from 'express';
-const router = express.Router();
-// import { user_repository } from '../database/user_repository';
-import { User } from '../models/user';
 import * as Joi from '@hapi/joi';
+import { User } from '../models/user';
+import { Account } from '../models/account';
+import { Operation } from '../models/operation';
+import { isNull } from 'util';
 
-// import { Database } from '../database/database';
-// const user = new Database(
-//   { username: Database.STRING, age: Database.NUMBER },
-//   'app_user'
-// );
+const router = express.Router();
 
-router.use(function(_req, _res, next) {
-  console.log('A request has been made to the users route');
-  console.log('Time:', Date.now());
-  next();
+const userSchema = Joi.object().keys({
+  username: Joi.string()
+    .alphanum()
+    .min(5)
+    .max(50)
+    .required(),
+  firstName: Joi.string()
+    .alphanum()
+    .required(),
+  lastName: Joi.string()
+    .alphanum()
+    .required(),
+  age: Joi.number()
+    .integer()
+    .min(0)
+    .max(200),
+});
+
+const operationSchema = Joi.object().keys({
+  amount: Joi.number()
+    .precision(2)
+    .required(),
 });
 
 router.get('/', (req, res) => {
@@ -23,113 +38,124 @@ router.get('/', (req, res) => {
   });
 });
 
-const schema = Joi.object()
-  .keys({
-    username: Joi.string()
-      .alphanum()
-      .min(5)
-      .max(50)
-      .required(),
-    firstName: Joi.string()
-      .alphanum()
-      .required(),
-    lastName: Joi.string()
-      .alphanum()
-      .required(),
-    age: Joi.number()
-      .integer()
-      .min(0)
-      .max(200),
-  })
-  .with('username', 'birthyear')
-  .without('password', 'access_token');
-
 router.post('/', (req, res) => {
-  const user = new User();
-  // user.username =
-  // if ()
-  console.log(req.body.firstName);
-  if (req.body.firstName === null) {
-    res.status(400).send('the firstName is required');
-    return;
-  }
-
-  User.create({
-    username: req.body.username,
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-  })
-    .then(result => {
-      console.log('ca marche');
-      console.log(result);
+  Joi.validate(req.body, userSchema)
+    .then(_result => {
+      User.create(req.body)
+        .then(user => {
+          res.send(user);
+        })
+        .catch(error => {
+          res.status(400).send(error);
+        });
     })
     .catch(error => {
-      res.status(400).send('Bad request');
+      res.status(400).send(error);
     });
 });
 
-// router.get('/', (req, res) => {
-//   // user.findBy({ test: 'test' }).execute();
-//   user
-//     .find()
-//     .execute()
-//     .then(result => {
-//       res.send(result.rows);
-//     })
-//     .catch(error => {
-//       res.status(404).send(error.stack);
-//     });
-//   // user_repository
-//   //   .getUsers()
-//   //   .then(result => {
-//   //     res.send(result.rows);
-//   //   })
-//   //   .catch(error => {
-//   //     res.status(404).send(error.stack);
-//   //   });
-// });
+router.get('/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).send('The id must be a number');
+    return;
+  }
 
-// router.get('/:id', (req, res) => {
-//   user_repository
-//     .getUser(parseInt(req.params.id))
-//     .then(result => {
-//       res.send(result.rows[0]);
-//     })
-//     .catch(error => {
-//       res.status(404).send(error.stack);
-//     });
-// });
+  User.findByPk(id, {
+    include: [
+      {
+        model: Account,
+      },
+    ],
+  })
+    .then(user => {
+      res.send(user);
+    })
+    .catch(error => {
+      res.status(400).send(error);
+    });
+});
 
-// router.post('/', (req, res) => {
-//   const user = new User(req.body.username, req.body.age);
+router.delete('/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    res.status(400).send('The id must be a number');
+    return;
+  }
 
-//   user_repository
-//     .postUser(user)
-//     .then(result => {
-//       res.send(result.rows[0]);
-//     })
-//     .catch(error => {
-//       res.status(404).send(error.stack);
-//     });
-// });
+  User.findByPk(id)
+    .then(user => {
+      User.destroy({
+        where: {
+          id: id,
+        },
+      })
+        .then(_result => {
+          res.send(user);
+        })
+        .catch(error => {
+          res.status(400).send(error);
+        });
+    })
+    .catch(error => {
+      res.status(400).send(error);
+    });
+});
 
-// router.delete('/:id', (req, res) => {
-//   const id = parseInt(req.params.id);
-//   user_repository
-//     .getUser(id)
-//     .then(result => {
-//       user_repository
-//         .deleteUser(id)
-//         .then(_ => {
-//           res.send(result.rows[0]);
-//         })
-//         .catch(error => {
-//           res.status(404).send(error.stack);
-//         });
-//     })
-//     .catch(error => {
-//       res.status(404).send(error.stack);
-//     });
-// });
+router.post('/:userId/accounts/:accountId/operations/add', (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const accountId = parseInt(req.params.accountId);
+
+  if (isNaN(userId) || isNaN(accountId)) {
+    res.status(400).send('User id and account id must be numbers');
+    return;
+  }
+
+  Joi.validate(req.body, operationSchema)
+    .then(_result => {
+      User.findOne({
+        include: [
+          {
+            model: Account,
+            where: { id: accountId, appUserId: userId },
+          },
+        ],
+        where: {
+          id: userId,
+        },
+      })
+        .then(_user => {
+          let operation = req.body;
+          operation.appUserId = userId;
+          operation.accountId = accountId;
+          return Operation.create(operation);
+        })
+        .then(async operation => {
+          const account = await Account.findByPk(accountId);
+          if (isNull(account)) {
+            res.status(400).send('Account not found');
+            return;
+          }
+          const newAmount = account.amount + req.body.amount;
+          Account.update(
+            {
+              amount: newAmount,
+            },
+            {
+              where: {
+                id: accountId,
+              },
+            }
+          );
+          res.send(operation);
+        })
+        .catch(error => {
+          res.status(400).send(error);
+        });
+    })
+    .catch(error => {
+      res.status(400).send(error);
+    });
+});
 
 export { router };

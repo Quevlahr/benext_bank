@@ -1,4 +1,4 @@
-import { Sequelize, Model, DataTypes, BuildOptions } from 'sequelize';
+import { Sequelize } from 'sequelize';
 
 // The password should not be versioned
 const sequelize = new Sequelize('bank', 'postgres', 'postgres', {
@@ -13,7 +13,6 @@ const sequelize = new Sequelize('bank', 'postgres', 'postgres', {
 });
 
 // Synchronize the database with the models /!\ not in production
-sequelize.sync();
+sequelize.sync({ force: false });
 
-console.log('une seule fois');
 export { sequelize };

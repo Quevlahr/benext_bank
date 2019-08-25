@@ -5,16 +5,9 @@ import express from 'express';
 
 import { router as usersRouter } from './routes/users';
 import { router as accountRouter } from './routes/accounts';
+import { router as operationRouter } from './routes/operations';
 
-import { sequelize } from './database/sequelize';
-// sequelize
-//   .authenticate()
-//   .then(() => {
-//     console.log('Yeah');
-//   })
-//   .catch(error => {
-//     console.log(error.stack);
-//   });
+import './database/sequelize';
 
 const app = express();
 
@@ -22,6 +15,7 @@ app.use(express.json());
 
 app.use('/api/users', usersRouter);
 app.use('/api/accounts', accountRouter);
+app.use('/api/operations', operationRouter);
 
 // This function is called when no route is matching.
 // Answers with "not found" page
